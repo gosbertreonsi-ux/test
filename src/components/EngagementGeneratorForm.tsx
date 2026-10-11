@@ -47,11 +47,18 @@ export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = (
     setCustomPostInput(id);
   };
 
+  const extractCleanId = (raw: string) => {
+    if (!raw) return '';
+    const match = raw.match(/\/(?:p|videos|reel|posts?)\/([a-zA-Z0-9_-]+)/);
+    return (match && match[1]) ? match[1] : raw.trim();
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const effectivePostId = selectedPostId || customPostInput.trim();
+    const rawPostInput = selectedPostId || customPostInput.trim();
+    const effectivePostId = extractCleanId(rawPostInput);
     if (!effectivePostId) {
-      alert('Please select or specify a target Post ID.');
+      alert('Please select or specify a target Post ID or URL.');
       return;
     }
 
@@ -174,9 +181,14 @@ export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = (
                     setSelectedPostId(e.target.value);
                     setCustomPostInput(e.target.value);
                   }}
-                  placeholder="e.g. post_mizizi_dev_01 or URL"
+                  placeholder="e.g. post_mizizi_dev_01 or paste any post URL"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-emerald-600"
                 />
+                {customPostInput.includes('http') && (
+                  <span className="text-[10px] text-emerald-400 font-mono block">
+                    Detected Post ID: <strong className="text-zinc-100">{extractCleanId(customPostInput)}</strong>
+                  </span>
+                )}
               </div>
             </div>
 

@@ -112,9 +112,25 @@ const commentSamples = [
 app.post('/api/engagement/generate', requireAdmin, (req, res) => {
   const { postId, likes = 500, comments = 50, reshares = 100 } = req.body;
 
-  const post = demoPosts.find((p) => p.id === postId);
+  // Extract ID if a full URL was provided
+  let cleanId = postId;
+  const urlMatch = postId.match(/\/(?:p|videos|reel|posts?)\/([a-zA-Z0-9_-]+)/);
+  if (urlMatch && urlMatch[1]) {
+    cleanId = urlMatch[1];
+  }
+
+  let post = demoPosts.find((p) => p.id === postId || p.id === cleanId);
   if (!post) {
-    return res.status(404).json({ error: `Demo post with ID "${postId}" not found.` });
+    // Auto-register external post reference on the fly
+    post = {
+      id: cleanId,
+      appName: req.body?.appName || 'Custom Application',
+      title: `Post Reference: ${cleanId}`,
+      body: `Target post reference from URL: ${postId}`,
+      createdAt: new Date().toISOString(),
+      engagements: [],
+    };
+    demoPosts.unshift(post);
   }
 
   const batchId = crypto.randomUUID();

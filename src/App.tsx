@@ -197,8 +197,28 @@ export default function App() {
         batchId,
       };
 
-      setPosts((prev) =>
-        prev.map((p) => {
+      setPosts((prev) => {
+        const exists = prev.some((p) => p.id === params.postId);
+        if (!exists) {
+          const newPostEntry: DemoPost = {
+            id: params.postId,
+            appName: selectedApp,
+            title: `Post Reference: ${params.postId}`,
+            body: `Target post imported from URL: ${params.postId}`,
+            author: 'External Creator',
+            authorHandle: '@imported_post',
+            createdAt: new Date().toISOString(),
+            genuineLikes: 142,
+            genuineComments: 12,
+            genuineReshares: 8,
+            simulatedLikes: params.likes,
+            simulatedComments: params.comments,
+            simulatedReshares: params.reshares,
+            batchesCount: 1,
+          };
+          return [newPostEntry, ...prev];
+        }
+        return prev.map((p) => {
           if (p.id === params.postId) {
             return {
               ...p,
@@ -209,11 +229,12 @@ export default function App() {
             };
           }
           return p;
-        })
-      );
+        });
+      });
 
       setBatches((prev) => [newBatch, ...prev]);
       setAuditLogs((prev) => [newAudit, ...prev]);
+      setSelectedPostId(params.postId);
       setIsGenerating(false);
       setCurrentTab('posts');
       return;
@@ -222,7 +243,7 @@ export default function App() {
     // Local in-memory generation
     const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const targetPost = posts.find((p) => p.id === params.postId);
-    const postTitle = targetPost ? targetPost.title : `Custom Post (${params.postId})`;
+    const postTitle = targetPost ? targetPost.title : `Post Reference (${params.postId})`;
 
     const newCommentsList: SimulatedCommentRecord[] = [];
     for (let i = 0; i < params.comments; i++) {
@@ -267,8 +288,28 @@ export default function App() {
     };
 
     setTimeout(() => {
-      setPosts((prev) =>
-        prev.map((p) => {
+      setPosts((prev) => {
+        const exists = prev.some((p) => p.id === params.postId);
+        if (!exists) {
+          const newPostEntry: DemoPost = {
+            id: params.postId,
+            appName: selectedApp,
+            title: `Post Reference: ${params.postId}`,
+            body: `Target post imported from URL: ${params.postId}`,
+            author: 'External Creator',
+            authorHandle: '@imported_post',
+            createdAt: new Date().toISOString(),
+            genuineLikes: 142,
+            genuineComments: 12,
+            genuineReshares: 8,
+            simulatedLikes: params.likes,
+            simulatedComments: params.comments,
+            simulatedReshares: params.reshares,
+            batchesCount: 1,
+          };
+          return [newPostEntry, ...prev];
+        }
+        return prev.map((p) => {
           if (p.id === params.postId) {
             return {
               ...p,
@@ -279,12 +320,13 @@ export default function App() {
             };
           }
           return p;
-        })
-      );
+        });
+      });
 
       setComments((prev) => [...newCommentsList, ...prev]);
       setBatches((prev) => [newBatch, ...prev]);
       setAuditLogs((prev) => [newAudit, ...prev]);
+      setSelectedPostId(params.postId);
       setIsGenerating(false);
       setCurrentTab('posts');
     }, 300);
