@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { SupportedApp } from '../types/mizizi';
-import { ShieldCheck, Key, Trash2, Layers, FileCode, CheckCircle2 } from 'lucide-react';
+import { SupportedApp, CustomerApp } from '../types/mizizi';
+import { ShieldCheck, Key, Trash2, Layers, FileCode, CheckCircle2, Server, Plus } from 'lucide-react';
 
 interface MiziziHeaderProps {
-  currentTab: 'generator' | 'posts' | 'batches' | 'backend';
-  setCurrentTab: (tab: 'generator' | 'posts' | 'batches' | 'backend') => void;
+  currentTab: 'generator' | 'posts' | 'batches' | 'backend' | 'registry';
+  setCurrentTab: (tab: 'generator' | 'posts' | 'batches' | 'backend' | 'registry') => void;
   selectedApp: SupportedApp;
   setSelectedApp: (app: SupportedApp) => void;
+  registeredApps: CustomerApp[];
   adminToken: string;
   setAdminToken: (token: string) => void;
   onPurgeAll: () => void;
@@ -18,6 +19,7 @@ export const MiziziHeader: React.FC<MiziziHeaderProps> = ({
   setCurrentTab,
   selectedApp,
   setSelectedApp,
+  registeredApps,
   adminToken,
   setAdminToken,
   onPurgeAll,
@@ -94,6 +96,17 @@ export const MiziziHeader: React.FC<MiziziHeaderProps> = ({
               )}
             </button>
             <button
+              onClick={() => setCurrentTab('registry')}
+              className={`px-3 py-1.5 rounded transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                currentTab === 'registry'
+                  ? 'bg-zinc-800 text-zinc-100 font-semibold border border-zinc-700'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+              }`}
+            >
+              <Server className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Customer Apps ({registeredApps.length})</span>
+            </button>
+            <button
               onClick={() => setCurrentTab('backend')}
               className={`px-3 py-1.5 rounded transition-colors whitespace-nowrap shrink-0 flex items-center gap-1 ${
                 currentTab === 'backend'
@@ -108,20 +121,28 @@ export const MiziziHeader: React.FC<MiziziHeaderProps> = ({
 
           {/* Right Action Island: App Switcher & Admin Auth */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* App Selector */}
+            {/* Dynamic Customer App Selector */}
             <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded text-xs">
-              <span className="text-zinc-500 font-mono text-[11px] hidden md:inline">App:</span>
+              <span className="text-zinc-500 font-mono text-[11px] hidden md:inline">Target:</span>
               <select
-                aria-label="Select Application"
+                aria-label="Select Target Customer Application"
                 value={selectedApp}
-                onChange={(e) => setSelectedApp(e.target.value as SupportedApp)}
-                className="bg-transparent text-emerald-400 font-semibold focus:outline-none cursor-pointer text-xs"
+                onChange={(e) => setSelectedApp(e.target.value)}
+                className="bg-transparent text-emerald-400 font-semibold focus:outline-none cursor-pointer text-xs max-w-[130px] sm:max-w-none truncate"
               >
-                <option value="Mizizi Social" className="bg-zinc-900 text-zinc-200">Mizizi Social</option>
-                <option value="Bibo" className="bg-zinc-900 text-zinc-200">Bibo</option>
-                <option value="Mizizi Creators" className="bg-zinc-900 text-zinc-200">Mizizi Creators</option>
-                <option value="Custom App" className="bg-zinc-900 text-zinc-200">Custom App</option>
+                {registeredApps.map((app) => (
+                  <option key={app.id} value={app.name} className="bg-zinc-900 text-zinc-200">
+                    {app.name}
+                  </option>
+                ))}
               </select>
+              <button
+                onClick={() => setCurrentTab('registry')}
+                title="Register or configure customer apps"
+                className="text-zinc-500 hover:text-emerald-400 p-0.5 cursor-pointer"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
             </div>
 
             {/* Admin Token Modal Trigger */}

@@ -5,8 +5,9 @@ import {
   EngagementBatch,
   SimulatedCommentRecord,
   SupportedApp,
+  CustomerApp,
 } from './types/mizizi';
-import { INITIAL_DEMO_POSTS, COMMENT_SAMPLES } from './data/miziziData';
+import { INITIAL_DEMO_POSTS, INITIAL_CUSTOMER_APPS, COMMENT_SAMPLES } from './data/miziziData';
 import { MiziziApiClient } from './services/miziziApiClient';
 import { MiziziHeader } from './components/MiziziHeader';
 import { LiveServerPanel } from './components/LiveServerPanel';
@@ -14,9 +15,11 @@ import { EngagementGeneratorForm } from './components/EngagementGeneratorForm';
 import { PostEngagementViewer } from './components/PostEngagementViewer';
 import { BatchesAndAudit } from './components/BatchesAndAudit';
 import { BackendStarterModal } from './components/BackendStarterModal';
+import { CustomerAppRegistry } from './components/CustomerAppRegistry';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'generator' | 'posts' | 'batches' | 'backend'>('generator');
+  const [currentTab, setCurrentTab] = useState<'generator' | 'posts' | 'batches' | 'backend' | 'registry'>('generator');
+  const [registeredApps, setRegisteredApps] = useState<CustomerApp[]>(INITIAL_CUSTOMER_APPS);
   const [selectedApp, setSelectedApp] = useState<SupportedApp>('Mizizi Social');
   const [adminToken, setAdminToken] = useState<string>('mizizi-dev-admin-secret-token-2026-xyz');
   const [serverUrl, setServerUrl] = useState<string>('http://localhost:5050');
@@ -462,6 +465,30 @@ export default function App() {
     setAuditLogs((prev) => [audit, ...prev]);
   };
 
+  const handleAddCustomerApp = (newApp: CustomerApp) => {
+    setRegisteredApps((prev) => [newApp, ...prev]);
+    setSelectedApp(newApp.name);
+    const audit: AuditLog = {
+      id: `audit_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      admin: 'Lead Admin (Local Dev)',
+      action: 'REGISTER_APP',
+      postId: 'N/A',
+      appName: newApp.name,
+      details: `Registered customer application "${newApp.name}" (${newApp.clientOrg}) at ${newApp.apiBaseUrl}.`,
+    };
+    setAuditLogs((prev) => [audit, ...prev]);
+  };
+
+  const handleDeleteCustomerApp = (appId: string) => {
+    setRegisteredApps((prev) => prev.filter((a) => a.id !== appId));
+  };
+
+  const handleSelectCustomerApp = (app: CustomerApp) => {
+    setSelectedApp(app.name);
+    setCurrentTab('generator');
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-white">
       {/* Header */}
@@ -470,6 +497,7 @@ export default function App() {
         setCurrentTab={setCurrentTab}
         selectedApp={selectedApp}
         setSelectedApp={setSelectedApp}
+        registeredApps={registeredApps}
         adminToken={adminToken}
         setAdminToken={setAdminToken}
         onPurgeAll={handlePurgeAll}
@@ -495,6 +523,7 @@ export default function App() {
           <EngagementGeneratorForm
             selectedApp={selectedApp}
             setSelectedApp={setSelectedApp}
+            registeredApps={registeredApps}
             posts={posts}
             selectedPostId={selectedPostId}
             setSelectedPostId={setSelectedPostId}
@@ -524,7 +553,18 @@ export default function App() {
           />
         )}
 
-        {/* Tab 4: Backend Express + Prisma Kit */}
+        {/* Tab 4: Multi-Tenant Customer App Registry */}
+        {currentTab === 'registry' && (
+          <CustomerAppRegistry
+            apps={registeredApps}
+            activeAppId={selectedApp}
+            onSelectApp={handleSelectCustomerApp}
+            onAddApp={handleAddCustomerApp}
+            onDeleteApp={handleDeleteCustomerApp}
+          />
+        )}
+
+        {/* Tab 5: Backend Express + Prisma Kit */}
         {currentTab === 'backend' && <BackendStarterModal />}
       </main>
 

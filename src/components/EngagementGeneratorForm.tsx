@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { DemoPost, SupportedApp } from '../types/mizizi';
-import { Sliders, Sparkles, Plus, Clock, Database, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { DemoPost, SupportedApp, CustomerApp } from '../types/mizizi';
+import { Sliders, Sparkles, Plus, Clock, Database, CheckCircle2, AlertTriangle, ArrowRight, Server, Globe } from 'lucide-react';
 
 interface EngagementGeneratorFormProps {
   selectedApp: SupportedApp;
   setSelectedApp: (app: SupportedApp) => void;
+  registeredApps: CustomerApp[];
   posts: DemoPost[];
   selectedPostId: string;
   setSelectedPostId: (id: string) => void;
@@ -23,6 +24,7 @@ interface EngagementGeneratorFormProps {
 export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = ({
   selectedApp,
   setSelectedApp,
+  registeredApps,
   posts,
   selectedPostId,
   setSelectedPostId,
@@ -37,6 +39,7 @@ export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = (
   const [deliveryMode, setDeliveryMode] = useState<'instant' | '10s' | '30s' | '60s'>('instant');
   const [customPostInput, setCustomPostInput] = useState<string>('');
 
+  const currentAppObj = registeredApps.find((a) => a.name === selectedApp) || registeredApps[0];
   const filteredPosts = posts.filter((p) => p.appName === selectedApp);
 
   const handleSelectPostChange = (id: string) => {
@@ -67,12 +70,12 @@ export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = (
       <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-zinc-200">Engagement Generator — Demo & Test Mode</span>
+            <span className="font-bold text-zinc-200">Engagement Generator — Multi-Client QA Mode</span>
             <span className="text-zinc-600">·</span>
-            <span className="text-emerald-400 font-mono">Isolated Data Schema</span>
+            <span className="text-emerald-400 font-mono">Any Customer App</span>
           </div>
           <p className="text-zinc-400">
-            Generate configurable test events for applications you administer. All records are isolated in <code className="text-zinc-300 font-mono">SimulatedEngagement</code> and never modify live user metrics.
+            Generate configurable test events for any customer application you administer. All records are isolated in <code className="text-zinc-300 font-mono">SimulatedEngagement</code> and never modify live user metrics.
           </p>
         </div>
 
@@ -91,27 +94,46 @@ export const EngagementGeneratorForm: React.FC<EngagementGeneratorFormProps> = (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Configuration Inputs (8 cols) */}
         <div className="lg:col-span-8 bg-zinc-900/40 border border-zinc-800 p-5 rounded space-y-5">
-          {/* 1. Application Selection */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono block">
-              1. Administered Application
-            </label>
+          {/* 1. Dynamic Application Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono block">
+                1. Target Customer Application
+              </label>
+              <span className="text-[11px] text-zinc-500 font-mono">
+                {registeredApps.length} Registered App(s)
+              </span>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {(['Mizizi Social', 'Bibo', 'Mizizi Creators', 'Custom App'] as SupportedApp[]).map((app) => (
+              {registeredApps.map((app) => (
                 <button
-                  key={app}
+                  key={app.id}
                   type="button"
-                  onClick={() => setSelectedApp(app)}
-                  className={`py-2 px-3 rounded text-xs font-semibold transition-all border text-center cursor-pointer ${
-                    selectedApp === app
+                  onClick={() => setSelectedApp(app.name)}
+                  className={`py-2 px-3 rounded text-xs font-semibold transition-all border text-center cursor-pointer truncate ${
+                    selectedApp === app.name
                       ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300 font-bold'
                       : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                   }`}
+                  title={`${app.name} (${app.clientOrg})`}
                 >
-                  {app}
+                  {app.name}
                 </button>
               ))}
             </div>
+
+            {/* Target App Endpoint Specs Preview */}
+            {currentAppObj && (
+              <div className="p-2.5 bg-zinc-950/80 rounded border border-zinc-800/80 text-[11px] font-mono text-zinc-400 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="w-3 h-3 text-emerald-400" />
+                  <span>Gateway: <strong className="text-zinc-200">{currentAppObj.apiBaseUrl}</strong></span>
+                </div>
+                <div>Auth: <span className="text-zinc-300 uppercase">{currentAppObj.authType}</span></div>
+                <div>Client: <span className="text-zinc-300">{currentAppObj.clientOrg}</span></div>
+              </div>
+            )}
           </div>
 
           {/* 2. Target Post Selection */}
