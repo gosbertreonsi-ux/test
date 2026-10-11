@@ -1,0 +1,6 @@
+{
+  "name": "Mizizi Engagement Generator",
+  "description": "Internal administrative dashboard to generate configurable, isolated simulated likes, comments, and reshares for testing and QA in Mizizi Social applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
